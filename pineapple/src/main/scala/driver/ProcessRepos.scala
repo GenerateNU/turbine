@@ -36,14 +36,14 @@ object ProcessRepos {
       }
 
     // Define the list of file extensions to filter by
-    val allowedExtensions = Seq(".go", ".tsx", ".py")
+    val allowedExtensions = Seq(".go", ".tsx", ".py", ".js", ".css", ".yaml", ".yml")
 
     // Use the FileFilter object to filter files by extensions
     val filteredFiles = FileFilter.filterFilesByExtensions(repoFiles, allowedExtensions)
 
 
     // Show the first few records as a demonstration
-    repoFiles.show()
+    filteredFiles.show()
 
     // Stop the Spark session when done
     spark.stop()
