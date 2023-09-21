@@ -23,10 +23,11 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - name: Change to API directory
+        run: cd ${{ env.API_DIR }}
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: ./api
 
   fmt:
     name: Format
@@ -39,10 +40,12 @@ jobs:
           toolchain: stable
           override: true
       - run: rustup component add rustfmt
+      - name: Change to API directory
+        run: cd ${{ env.API_DIR }}
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: ${{ env.API_DIR}} --all -- --check
+          args: --all -- --check
 
   clippy:
     name: Clippy
@@ -55,10 +58,12 @@ jobs:
           toolchain: stable
           override: true
       - run: rustup component add clippy
+      - name: Change to API directory
+        run: cd ${{ env.API_DIR }}
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: ${{ env.API_DIR}} --all-targets --all-features -- -D warnings
+          args: --all-targets --all-features -- -D warnings
 
   check:
     name: Check
@@ -73,11 +78,13 @@ jobs:
       - uses: Swatinem/rust-cache@v1
         with:
           key: ${{ runner.os }}-check
+      - name: Change to API directory
+        run: cd ${{ env.API_DIR }}
       - uses: actions-rs/cargo@v1
         with:
           command: check
         env:
-          RUSTFLAGS: ${{ env.API_DIR}} -D warnings
+          RUSTFLAGS: -D warnings
 
   coverage:
     name: Code Coverage
@@ -90,7 +97,9 @@ jobs:
           toolchain: stable
           override: true
       - run: cargo install cargo-tarpaulin
+      - name: Change to API directory
+        run: cd ${{ env.API_DIR }}
       - uses: actions-rs/cargo@v1
         with:
           command: tarpaulin
-          args: ${{ env.API_DIR}} --verbose --workspace
+          args: --verbose --workspace
