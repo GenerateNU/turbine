@@ -10,7 +10,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  API_DIR: ./api
+  MANIFEST_PATH: --manifest-path api/Cargo.toml
 
 jobs:
   test:
@@ -23,11 +23,10 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - name: Change to API directory
-        run: cd ${{ env.API_DIR }}
       - uses: actions-rs/cargo@v1
         with:
           command: test
+          args: ${{ env.MANIFEST_PATH }}
 
   fmt:
     name: Format
@@ -40,12 +39,11 @@ jobs:
           toolchain: stable
           override: true
       - run: rustup component add rustfmt
-      - name: Change to API directory
-        run: cd ${{ env.API_DIR }}
+
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --all -- --check
+          args: ${{ env.MANIFEST_PATH }} --all -- --check
 
   clippy:
     name: Clippy
@@ -58,12 +56,10 @@ jobs:
           toolchain: stable
           override: true
       - run: rustup component add clippy
-      - name: Change to API directory
-        run: cd ${{ env.API_DIR }}
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --all-targets --all-features -- -D warnings
+          args: ${{ env.MANIFEST_PATH }} --all-targets --all-features -- -D warnings
 
   check:
     name: Check
@@ -78,11 +74,10 @@ jobs:
       - uses: Swatinem/rust-cache@v1
         with:
           key: ${{ runner.os }}-check
-      - name: Change to API directory
-        run: cd ${{ env.API_DIR }}
       - uses: actions-rs/cargo@v1
         with:
           command: check
+          args: ${{ env.MANIFEST_PATH }}
         env:
           RUSTFLAGS: -D warnings
 
@@ -97,9 +92,7 @@ jobs:
           toolchain: stable
           override: true
       - run: cargo install cargo-tarpaulin
-      - name: Change to API directory
-        run: cd ${{ env.API_DIR }}
       - uses: actions-rs/cargo@v1
         with:
           command: tarpaulin
-          args: --verbose --workspace
+          args: ${{ env.MANIFEST_PATH }} --verbose --workspace
