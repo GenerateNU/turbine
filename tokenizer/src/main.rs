@@ -9,42 +9,40 @@ pub struct PinceoneDriver {
 
 impl PinceoneDriver {
     pub fn new(host: &str, port: u16, db_name: &str) -> Self {
-        let client = Client::with_uri_str(&format!("mongodb://{}:{}", host, port))
-            .expect("Failed to create PineconeDB client");
-        let client = Client::new(env!("PINECONE_API_KEY"), env!("PINECONE_ENV")).await.unwrap();
-        let mut index = client.index(env!("PINECONE_INDEX_NAME"));
+        let client: Client = Client::new(env!("PINECONE_API_KEY"), env!("PINECONE_ENV")).await.unwrap();
+        let mut index: Index = client.index(env!("PINECONE_INDEX_NAME"));
         let _ = index.describe().await.unwrap();
 
         PinceoneDriver { client, index }
     }
 
-    pub async fn flush_collection(&self, collection_name: &str) -> Result<(), mongodb::error::Error> {
-        let collection = self.client.database(&self.db_name).collection(collection_name);
+    pub async fn flush_collection(&self, collection_name: &str) -> Result<(), pinenut::error::Error> {
+        let collection = self.client.collection(collection_name);
         let result = collection.delete_many(Document::new()).await?;
         println!("Deleted {} documents from {}", result.deleted_count, collection_name);
         Ok(())
     }
 
-    pub async fn remove_collection(&self, collection_name: &str) -> Result<(), mongodb::error::Error> {
+    pub async fn remove_collection(&self, collection_name: &str) -> Result<(), pinenut::error::Error> {
         let collection = self.client.database(&self.db_name).collection(collection_name);
         collection.drop(None).await?;
         println!("Dropped {} from {}", collection_name, self.db_name);
         Ok(())
     }
 
-    pub async fn create_collection(&self, collection_name: &str) -> Result<(), mongodb::error::Error> {
-        self.client.database(&self.db_name).create_collection(collection_name, None).await?;
-        println!("Created collection {} in {}", collection_name, self.db_name);
+    pub async fn create_collection(&self, collection_name: &str) -> Result<(), pinenut::error::Error> {
+        self.client.create_collection(collection_name, self.index).await?;
+        println!("Created collection {} in {}", collection_name, self.index);
         Ok(())
     }
 
-    pub async fn collection_size(&self, collection_name: &str) -> Result<i64, mongodb::error::Error> {
+    pub async fn collection_size(&self, collection_name: &str) -> Result<i64, pinenut::error::Error> {
         let collection = self.client.database(&self.db_name).collection(collection_name);
         let count = collection.count_documents(Document::new(), None).await?;
         Ok(count)
     }
 
-    pub async fn insert_data(&self, collection_name: &str, json_file: &str, clear: bool) -> Result<(), mongodb::error::Error> {
+    pub async fn insert_data(&self, collection_name: &str, json_file: &str, clear: bool) -> Result<(), pinenut::error::Error> {
         let collection = self.client.database(&self.db_name).collection(collection_name);
 
         if clear {
