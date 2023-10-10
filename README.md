@@ -18,4 +18,9 @@
     <img src="https://github.com/GenerateNU/turbine/actions/workflows/ingestion.yml/badge.svg"
       alt="Ingestion actions status" />
   </a>
+  <!-- Tokenization Actions -->
+  <a href="https://github.com/GenerateNU/turbine/actions/workflows/tokenization.yml">
+    <img src="https://github.com/GenerateNU/turbine/actions/workflows/tokneization.yml/badge.svg"
+      alt="Ingestion actions status" />
+  </a>
 </div>
