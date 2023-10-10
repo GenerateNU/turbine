@@ -12,6 +12,7 @@ async fn main() -> std::io::Result<()> {
     mongo.create_collection(collection).await?;
     mongo.flush_collection(collection).await?;
 
+    // TODO: create a new collection for each repo, insert documents into sub collections 
     // set download links and ingest
     let urls = vec!["https://github.com/user/repo/raw/master/file1.zip", "https://github.com/user/repo/raw/master/file2.zip"];
     let zips = vec!["./repo_1.zip", "./repo_2.zip"];
