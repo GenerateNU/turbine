@@ -161,7 +161,10 @@ impl MongoDriver {
         }
     
         let collection: mongodb::Collection<Document> =
-            self.client.as_ref().unwrap().database(&self.db_name).collection(collection_name);
+            self.client.as_ref()
+                .unwrap()
+                .database(&self.db_name)
+                .collection(collection_name);
     
         let cursor: mongodb::Cursor<Document> = collection.find(Document::new(), None).await?;
         let mut result: Vec<Document> = Vec::new();

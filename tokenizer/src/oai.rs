@@ -23,7 +23,10 @@ impl OpenAIClient {
 
     pub async fn tokenize_collection(&self, collection: &str) -> std::io::Result<>{
         let result Vec<Document> = self.mongo_client.get_all_documents(self.collection);
-        let col: mongodb::Collection<Document>= self.mongo_model.client.as_ref().unwrap().database(&self.mongo_model.db_name).collection(collection);
+        let col: mongodb::Collection<Document>= self.mongo_model.client.as_ref()
+                                                                       .unwrap()
+                                                                       .database(&self.mongo_model.db_name)
+                                                                       .collection(collection);
 
         while let Some(result) = cursor.next().await {
             match result {
