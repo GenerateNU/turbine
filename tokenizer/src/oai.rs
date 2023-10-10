@@ -7,22 +7,22 @@ use std::env;
 
 pub struct OpenAIClient {
     oai_client: OpenaiClient,
-    mongo_model: MongoDriver,
+    mongo_model: &MongoDriver,
     model: Language,
 }
 
 impl OpenAIClient {
 
     pub fn new(openai_api_key: &str, mongo_model: &MongoDriver) -> Self {
-        MongoDriver {
-            OpenaiClient::new(openai_api_key),
-            mongo_model,
-            Language::English,
+        OpenAIClient {
+            oai_client: OpenaiClient::new(openai_api_key),
+            mongo_model: mongo_model,
+            model: Language::English,
         }
     }
 
     pub async fn tokenize_collection(&self, collection: &str) -> std::io::Result<>{
-        let result Vec<Document> = self.mongo_client.get_all_documents(self.collection);
+        let result: Vec<Document> = self.mongo_client.get_all_documents(self.collection);
         let col: mongodb::Collection<Document>= self.mongo_model.client.as_ref()
                                                                        .unwrap()
                                                                        .database(&self.mongo_model.db_name)
