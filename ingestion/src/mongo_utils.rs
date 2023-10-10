@@ -1,9 +1,8 @@
-use mongodb::{Client, bson::Document, options::{FindOptions, InsertOneOptions, InsertManyOptions}, results::InsertManyResult};
-use futures::future::try_join_all;
+use mongodb::{Client, bson::Document, error::Error};
 
 pub struct MongoDriver {
-    client: Option<Client>,
-    db_name: String,
+    pub client: Option<Client>,
+    pub db_name: String,
     host: String,
     port: u16,
 }
@@ -39,7 +38,7 @@ impl MongoDriver {
     }
     
 
-    ub async fn create_collection(&mut self, collection_name: &str) -> Result<(), mongodb::error::Error> {
+    pub async fn create_collection(&mut self, collection_name: &str) -> Result<(), mongodb::error::Error> {
         if self.client.is_none() {
             self.connect().await?;
         }
@@ -64,7 +63,7 @@ impl MongoDriver {
         }
     }
 
-    pub async fn collection_size(&self, collection_name: &str) -> Result<u64, mongodb::error::Error> {
+    pub async fn collection_size(&mut self, collection_name: &str) -> Result<u64, mongodb::error::Error> {
         if self.client.is_none() {
             self.connect().await?;
         }
@@ -74,7 +73,7 @@ impl MongoDriver {
     }
 
 
-    pub async fn search_query(&self, collection_name: &str, qu: Document, proj: Document, lim: i64, show: bool) -> Result<Vec<Document>, mongodb::error::Error> {
+    pub async fn search_query(&mut self, collection_name: &str, qu: Document, proj: Document, lim: i64, show: bool) -> Result<Vec<Document>, mongodb::error::Error> {
         if self.client.is_none() {
             self.connect().await?;
         }
@@ -124,34 +123,6 @@ impl MongoDriver {
         Ok(())
     }
 
-    pub async fn insert_many_documents(
-        &mut self,
-        collection_name: &str,
-        documents: Vec<Document>,
-    ) -> Result<InsertManyResult, mongodb::error::Error> {
-        if self.client.is_none() {
-            self.connect().await?;
-        }
-    
-        let collection: mongodb::Collection<Document> = self.client.as_ref().unwrap().database(&self.db_name).collection(collection_name);
-    
-        let options: InsertManyOptions = InsertManyOptions::default();
-    
-        let write_models: Vec<WriteModel<Document>> = documents
-            .into_iter()
-            .map(|doc| WriteModel::InsertOne { document: doc })
-            .collect();
-    
-        let insert_futures = write_models.iter().map(|model| {
-            let collection_ref = &collection;
-            collection_ref.insert_one_with_session(model, &options)
-        });
-    
-        let results: Result<Vec<_>, _> = try_join_all(insert_futures).await;
-        let insert_many_result: InsertManyResult = InsertManyResult::from_results(results)?;
-    
-        Ok(insert_many_result)
-    }
     pub async fn get_all_documents(
         &self,
         collection_name: &str,
