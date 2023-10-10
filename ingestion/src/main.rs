@@ -1,16 +1,10 @@
-use ingestion::mongo_utils;
+use ingestion::mongo_utils::MongoDriver;
 
 async fn main() -> std::io::Result<()> {
-    let subscriber = get_subscriber("turbine_api".into(), "info".into(), std::io::stdout);
-    init_subscriber(subscriber);
+    let mongo: MongoDriver = MongoDriver::new("localhost", 8080, "turbine");
+    mongo.connect();
 
-    let configuration = get_configuration().expect("Failed to read configuration.");
+    mongo.flush_collection("github_data");
 
-    let address = format!(
-        "{}:{}",
-        configuration.application.host, configuration.application.port
-    );
-
-    let listener = TcpListener::bind(address)?;
-    run(listener)?.await?;
-    O
+    Ok(())
+}
