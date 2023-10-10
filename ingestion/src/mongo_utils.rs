@@ -1,4 +1,4 @@
-use mongodb::{Client, bson::Document, options::{FindOptions, InsertOneOptions, InsertManyOptions}};
+use mongodb::{Client, bson::Document, options::{FindOptions, InsertOneOptions, InsertManyOptions}, results::InsertManyResult};
 use futures::future::try_join_all;
 
 pub struct MongoDriver {
@@ -112,11 +112,9 @@ impl MongoDriver {
             self.connect().await?;
         }
     
-        let client = self.client.as_ref().unwrap();
-        let db = client.database(&self.db_name);
-        let collection = db.collection(collection_name);
+        let collection: mongodb::Collection<Document> = self.client.as_ref().unwrap().database(&self.db_name).collection(collection_name);
     
-        let options = InsertManyOptions::default();
+        let options: InsertManyOptions = InsertManyOptions::default();
     
         let write_models: Vec<WriteModel<Document>> = documents
             .into_iter()
@@ -125,11 +123,11 @@ impl MongoDriver {
     
         let insert_futures = write_models.iter().map(|model| {
             let collection_ref = &collection;
-            collection_ref.insert_one_with_options(model, &options)
+            collection_ref.insert_one_with_session(model, &options)
         });
     
         let results: Result<Vec<_>, _> = try_join_all(insert_futures).await;
-        let insert_many_result = InsertManyResult::from_results(results)?;
+        let insert_many_result: InsertManyResult = InsertManyResult::from_results(results)?;
     
         Ok(insert_many_result)
     }
