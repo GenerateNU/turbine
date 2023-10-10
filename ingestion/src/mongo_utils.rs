@@ -64,7 +64,7 @@ impl MongoDriver {
 
         let cursor: mongodb::Cursor<Document> = collection.find(qu, options).await?;
         let mut result: Vec<Document> = Vec::new();
-        while let Some(doc) = cursor.next().await {
+        while let Some(doc) = cursor.deserialize_current() {
             match doc {
                 Ok(document) => {
                     if show {
@@ -78,11 +78,6 @@ impl MongoDriver {
             }
         }
 
-        if show {
-            for document in &result {
-                println!("{:?}", document);
-            }
-        }
     
         Ok(result)
     }
