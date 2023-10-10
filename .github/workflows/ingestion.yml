@@ -1,7 +1,5 @@
 name: Ingestion
 
-name: API
-
 on:
   push:
     branches:
