@@ -20,7 +20,7 @@
   </a>
   <!-- Tokenization Actions -->
   <a href="https://github.com/GenerateNU/turbine/actions/workflows/tokenization.yml">
-    <img src="https://github.com/GenerateNU/turbine/actions/workflows/tokneization.yml/badge.svg"
+    <img src="https://github.com/GenerateNU/turbine/actions/workflows/tokenization.yml/badge.svg"
       alt="Ingestion actions status" />
   </a>
 </div>
