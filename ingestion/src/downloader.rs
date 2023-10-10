@@ -6,44 +6,49 @@ use std::path::Path;
 use zip::write::FileOptions;
 use zip::ZipWriter;
 use mongo_utils::MongoDriver;
+use mongodb::bson::{doc, Document};
 
 
 pub struct GitHubDownloader {
     client: reqwest::Client,
+    mongo_model: MongoDriver,
+    collection: String,
 }
 
 impl GitHubDownloader {
-    pub fn new() -> Self {
+    pub fn new(mongo_model: &MongoDriver, collection: &str) -> Self {
         let client = reqwest::Client::new();
-        GitHubDownloader { client }
+        GitHubDownloader { client, mongo_model, collection }
     }
 
-    pub async fn download_and_zip_urls(
+    pub async fn download_git_zips(
         &self,
-        urls: Vec<(&str, &str)>,
-        zip_file_path: &str,
+        urls: Vec<&str>,
+        repo_name: &str,
     ) -> Result<(), Box<dyn Error>> {
-        let file = File::create(zip_file_path)?;
-        let mut zip = ZipWriter::new(file);
-        let options = FileOptions::default()
-            .unix_permissions(0o755)
-            .compression_method(zip::CompressionMethod::Stored);
-
-        for (url, file_name) in urls {
+        for url in urls {
             let response = self.client.get(url).send().await?;
 
             if response.status() != reqwest::StatusCode::OK {
                 eprintln!("Error downloading {}: {:?}", url, response.status());
                 continue;
             }
-
+            
+            // copy response into memory
             let mut file_buf = Vec::new();
+            response.copy_to(&mut file_buf)?;
 
-            // response.copy_to(&mut file_buf)?;
-            response.read_to_end(&mut file_buf)?;
+            // create BSON
+            let document = doc! {
+                "url": response.url.to_owned(),
+                "data": file_buf,
+            }
 
-            zip.start_file(file_name, options)?;
-            zip.write_all(&file_buf)?;
+            // insert into Mongostore
+            self.mongo_model.insert_document(self.collection, document).await?;
+
+            // clear the buffer for the next iteration
+            file_buf.clear();
         }
 
         Ok(())
