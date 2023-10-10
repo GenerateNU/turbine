@@ -26,16 +26,16 @@ impl GitHubDownloader {
     pub async fn download_git_zips(
         &self,
         urls: Vec<&str>,
-        zip_dir: &str,
+        zip_dirs: Vec<&str>,
     ) -> Result<(), Box<dyn Error>> {
-        for url in urls {
+        for (index, url) in urls.iter().enumerate() {
             let response = self.client.get(url).send().await?;
 
             if response.status() != reqwest::StatusCode::OK {
                 eprintln!("Error downloading {}: {:?}", url, response.status());
                 continue;
             }
-            let filename = url.split('/').last().unwrap_or("unknown.zip");
+            let filename = url.split('/').last().unwrap_or("unknown_{}.zip", index);
             let file_path = Path::new(zip_dir).join(filename);
             
             let mut response_body = response.bytes_stream();
@@ -50,7 +50,7 @@ impl GitHubDownloader {
         Ok(())
     }
 
-    async fn mongo_insert(&self, zip_dir: &str, filter_suffix: Vec&<str>) -> mongodb::error::Result<()> {
+    pub async fn mongo_insert(&self, zip_dir: Vec<&str>, filter_suffix: Vec<&str>) -> mongodb::error::Result<()> {
         let collection: mongodb::Collection<Document>= self.mongo_model.client.as_ref().unwrap().database(self.mongo_model.db_name).collection(self.collection_name);
 
         // open the ZIP file
@@ -62,7 +62,6 @@ impl GitHubDownloader {
             let mut file = archive.by_index(i)?;
             let file_name = file.name().to_string();
 
-            // apply filtering
             let found_suffix = filter_suffix.iter().any(|&suffix| file_name.ends_with(suffix));
             if !found_suffix {
                 continue;
