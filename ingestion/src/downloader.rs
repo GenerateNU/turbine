@@ -24,7 +24,6 @@ impl GitHubDownloader {
     pub async fn download_git_zips(
         &self,
         urls: Vec<&str>,
-        repo_name: &str,
     ) -> Result<(), Box<dyn Error>> {
         for url in urls {
             let response = self.client.get(url).send().await?;
