@@ -65,6 +65,9 @@ impl MongoDriver {
     }
 
     pub async fn collection_size(&self, collection_name: &str) -> Result<u64, mongodb::error::Error> {
+        if self.client.is_none() {
+            self.connect().await?;
+        }
         let collection: mongodb::Collection<Document>= self.client.as_ref().unwrap().database(&self.db_name).collection(collection_name);
         let count = collection.count_documents(Document::new(), None).await?;
         Ok(count)
@@ -72,6 +75,9 @@ impl MongoDriver {
 
 
     pub async fn search_query(&self, collection_name: &str, qu: Document, proj: Document, lim: i64, show: bool) -> Result<Vec<Document>, mongodb::error::Error> {
+        if self.client.is_none() {
+            self.connect().await?;
+        }
         let collection: mongodb::Collection<Document>= self.client.as_ref().unwrap().database(&self.db_name).collection(collection_name);
         let mut options: FindOptions = FindOptions::default();
         options.projection = Some(proj);
@@ -145,5 +151,32 @@ impl MongoDriver {
         let insert_many_result: InsertManyResult = InsertManyResult::from_results(results)?;
     
         Ok(insert_many_result)
+    }
+    pub async fn get_all_documents(
+        &self,
+        collection_name: &str,
+    ) -> Result<Vec<Document>, mongodb::error::Error> {
+        if self.client.is_none() {
+            self.connect().await?;
+        }
+    
+        let collection: mongodb::Collection<Document> =
+            self.client.as_ref().unwrap().database(&self.db_name).collection(collection_name);
+    
+        let cursor: mongodb::Cursor<Document> = collection.find(Document::new(), None).await?;
+        let mut result: Vec<Document> = Vec::new();
+    
+        while let Some(doc) = cursor.next().await {
+            match doc {
+                Ok(document) => {
+                    result.push(document);
+                }
+                Err(e) => {
+                    eprintln!("Error: {:?}", e);
+                }
+            }
+        }
+    
+        Ok(result)
     }
 }
