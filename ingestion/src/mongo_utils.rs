@@ -1,4 +1,4 @@
-use mongodb::{Client, bson::Document, error::Error};
+use mongodb::{Client, bson::Document, error::Error, options::{InsertOneOptions, FindOptions}};
 
 pub struct MongoDriver {
     pub client: Option<Client>,
@@ -43,24 +43,8 @@ impl MongoDriver {
             self.connect().await?;
         }
     
-        match self.client.as_ref().unwrap().database(&self.db_name).create_collection(collection_name, None).await {
-            Ok(_) => {
-                println!("Created collection {} in {}", collection_name, self.db_name);
-                Ok(())
-            }
-            Error(err) => {
-                if let Some(code) = err.code {
-                    if code == 48 {
-                        println!("Collection {} already exists in {}", collection_name, self.db_name);
-                        Ok(())
-                    } else {
-                        Error(err)
-                    }
-                } else {
-                    Error(err)
-                }
-            }
-        }
+        self.client.as_ref().unwrap().database(&self.db_name).create_collection(collection_name, None).await;
+         Ok(())
     }
 
     pub async fn collection_size(&mut self, collection_name: &str) -> Result<u64, mongodb::error::Error> {
@@ -85,7 +69,7 @@ impl MongoDriver {
 
         let cursor: mongodb::Cursor<Document> = collection.find(qu, options).await?;
         let mut result: Vec<Document> = Vec::new();
-        while let Some(doc) = cursor.deserialize_current() {
+        while let doc = cursor.deserialize_current() {
             match doc {
                 Ok(document) => {
                     if show {
@@ -124,7 +108,7 @@ impl MongoDriver {
     }
 
     pub async fn get_all_documents(
-        &self,
+        &mut self,
         collection_name: &str,
     ) -> Result<Vec<Document>, mongodb::error::Error> {
         if self.client.is_none() {
@@ -140,7 +124,7 @@ impl MongoDriver {
         let cursor: mongodb::Cursor<Document> = collection.find(Document::new(), None).await?;
         let mut result: Vec<Document> = Vec::new();
     
-        while let Some(doc) = cursor.next().await {
+        while let doc = cursor.deserialize_current() {
             match doc {
                 Ok(document) => {
                     result.push(document);
@@ -150,7 +134,7 @@ impl MongoDriver {
                 }
             }
         }
-    
+
         Ok(result)
     }
 }
