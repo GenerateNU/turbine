@@ -39,14 +39,29 @@ impl MongoDriver {
     }
     
 
-    pub async fn create_collection(&mut self, collection_name: &str) -> Result<(), mongodb::error::Error> {
+    ub async fn create_collection(&mut self, collection_name: &str) -> Result<(), mongodb::error::Error> {
         if self.client.is_none() {
             self.connect().await?;
         }
-
-        self.client.as_ref().unwrap().database(&self.db_name).create_collection(collection_name, None).await?;
-        println!("Created collection {} in {}", collection_name, self.db_name);
-        Ok(())
+    
+        match self.client.as_ref().unwrap().database(&self.db_name).create_collection(collection_name, None).await {
+            Ok(_) => {
+                println!("Created collection {} in {}", collection_name, self.db_name);
+                Ok(())
+            }
+            Error(err) => {
+                if let Some(code) = err.code {
+                    if code == 48 {
+                        println!("Collection {} already exists in {}", collection_name, self.db_name);
+                        Ok(())
+                    } else {
+                        Error(err)
+                    }
+                } else {
+                    Error(err)
+                }
+            }
+        }
     }
 
     pub async fn collection_size(&self, collection_name: &str) -> Result<u64, mongodb::error::Error> {

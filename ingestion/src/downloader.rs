@@ -5,6 +5,8 @@ use std::io::copy;
 use std::path::Path;
 use zip::write::FileOptions;
 use zip::ZipWriter;
+use mongo_utils::MongoDriver;
+
 
 pub struct GitHubDownloader {
     client: reqwest::Client,
@@ -36,7 +38,9 @@ impl GitHubDownloader {
             }
 
             let mut file_buf = Vec::new();
-            response.copy_to(&mut file_buf)?;
+
+            // response.copy_to(&mut file_buf)?;
+            response.read_to_end(&mut file_buf)?;
 
             zip.start_file(file_name, options)?;
             zip.write_all(&file_buf)?;
