@@ -51,9 +51,6 @@ impl GitHubDownloader {
     }
 
     pub async fn mongo_insert(&self, zip_dir: Vec<&str>, filter_suffix: Vec<&str>) -> mongodb::error::Result<()> {
-        let collection: mongodb::Collection<Document>= self.mongo_model.client.as_ref().unwrap().database(self.mongo_model.db_name).collection(self.collection_name);
-
-        // open the ZIP file
         let file = File::open(zip_dir)?;
         let reader = std::io::BufReader::new(file);
         let mut archive = ZipArchive::new(reader)?;
