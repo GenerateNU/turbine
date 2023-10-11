@@ -8,16 +8,16 @@ use std::env;
 pub struct OpenAIClient {
     oai_client: Client,
     mongo_model: &MongoDriver,
-    model: Language,
+    collection: String,
 }
 
 impl OpenAIClient {
 
-    pub fn new(openai_api_key: &str, mongo_model: &MongoDriver) -> Self {
+    pub fn new(openai_api_key: &str, mongo_model: &MongoDriver, collection: &str) -> Self {
         OpenAIClient {
             oai_client: Client::new(openai_api_key),
             mongo_model: mongo_model,
-            model: Language::English,
+            collection: collection.to_string(),
         }
     }
 
