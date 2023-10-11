@@ -2,11 +2,9 @@ name: Ingestion
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    paths:
+      - "ingestion/**"
+      - ".github/workflows/ingestion.yml"
 
 env:
   CARGO_TERM_COLOR: always
