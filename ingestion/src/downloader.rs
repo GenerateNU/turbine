@@ -4,7 +4,6 @@ use std::fs::File;
 use std::path::Path;
 use mongo_utils::MongoDriver;
 use mongodb::bson::doc;
-use std::io::Read;
 use zip::read::ZipArchive;
 
 use crate::mongo_utils;
@@ -41,9 +40,9 @@ impl GitHubDownloader {
             let file_path: std::path::PathBuf = Path::new(zip_dirs[index]).join(filename);
             
             let mut response_body = response.bytes().await?;
-            while let Some(chunk) = response_body.concat() {
-                let chunk = chunk?;
-                file_path.write_all(&chunk)?;
+            while let chunk = response_body.chunks(8) {
+                let chunk = chunk;
+                file_path.write_all(&chunk)?; // TODO: write successfully
             }
 
             println!("Downloaded: {}", file_path.display());
