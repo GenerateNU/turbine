@@ -16,14 +16,16 @@ impl PinceoneDriver {
         PinceoneDriver { client, index }
     }
 
-    pub async fn insert_data(&self,) -> Result<(), pinenut::error::Error> {
+    pub async fn insert_data(&self, vec: &Vector) -> Result<(), pinenut::error::Error> {
+        /* Sample Vector
         let vec: Vector = Vector{
-            id: "B".to_string(),
-            values: vec![0.5; 32],
+            id: "B".to_string(), // id given by filename hash
+            values: vec![0.5; 32], // embedding vector
             sparse_values: None,
             metadata: None
         };
-    
+        */
+
         match self.index.upsert(String::from("odle"), vec![vec]).await {
             Ok(_) => assert!(true),
             Err(err) => panic!("unable to upsert: {:?}", err)
