@@ -2,11 +2,9 @@ name: Tokenization
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    paths:
+      - "tokenizer/**"
+      - ".github/workflows/tokenization.yml"
 
 env:
   CARGO_TERM_COLOR: always
