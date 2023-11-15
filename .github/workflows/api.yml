@@ -2,11 +2,9 @@ name: API
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    paths:
+      - "api/**"
+      - ".github/workflows/api.yml"
 
 env:
   CARGO_TERM_COLOR: always
