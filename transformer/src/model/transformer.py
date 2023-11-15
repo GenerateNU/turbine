@@ -1,5 +1,3 @@
-import jax
-import jax.numpy as np
 from flax import linen as nn
 
 from attention import SelfAttention, PositionalEncoding
@@ -11,10 +9,10 @@ class Transformer(nn.Module):
     num_layers: int
     dropout_rate: float = 0.1
 
-    def setup(self):
-        self.attention_blocks = [SelfAttentionBlock(self.hidden_dim, self.num_heads, self.dropout_rate)
+    def setup(self) -> None:
+        self.attention_blocks: list[SelfAttentionBlock] = [SelfAttentionBlock(self.hidden_dim, self.num_heads, self.dropout_rate)
                                  for _ in range(self.num_layers)]
-        self.feedforward_blocks = [FeedforwardBlock(self.hidden_dim) for _ in range(self.num_layers)]
+        self.feedforward_blocks: list[FeedforwardBlock] = [FeedforwardBlock(self.hidden_dim) for _ in range(self.num_layers)]
 
     def __call__(self, inputs, mask=None, train=True):
         x = inputs
