@@ -11,9 +11,9 @@ import logging
 logger: logging.Logger = logging.getLogger(__name__)
 
 class Trainer:
-    def __init__(self, transformer_kwargs:dict, dataloader_kwargs:dict, max_length:int=512):
-        self.dataloader: JaxDataloader = JaxDataloader(**dataloader_kwargs)
-        self.model: Transformer = Transformer(**transformer_kwargs)
+    def __init__(self, model:Transformer, dataloader:jax, max_length:int=512):
+        self.dataloader: JaxDataloader = dataloader
+        self.model: Transformer = model
         self.max_length: int = max_length
 
     def create_optimizer(self, params):
