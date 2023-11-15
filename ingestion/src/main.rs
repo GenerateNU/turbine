@@ -8,7 +8,7 @@ async fn main() -> std::io::Result<()> {
     mongo.connect().await?;
 
     // create/connect if exists, and flush
-    let collection = "github_data"
+    let collection = "github_data";
     mongo.create_collection(collection).await?;
     mongo.flush_collection(collection).await?;
 
