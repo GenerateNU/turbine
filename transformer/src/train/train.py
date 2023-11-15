@@ -11,13 +11,9 @@ import logging
 logger: logging.Logger = logging.getLogger(__name__)
 
 class Trainer:
-    def __init__(self, mongo_uri:str, database_name:str, collection_names:list, max_length:int=512):
-        self.dataloader: JaxDataloader = JaxDataloader(mongo_uri=mongo_uri,
-                                        database_name=database_name, 
-                                        collection_names=collection_names)
-        self.model: Transformer = Transformer(hidden_dim=4,
-                                 num_heads=2,
-                                 num_layers=4)
+    def __init__(self, transformer_kwargs:dict, dataloader_kwargs:dict, max_length:int=512):
+        self.dataloader: JaxDataloader = JaxDataloader(**dataloader_kwargs)
+        self.model: Transformer = Transformer(**transformer_kwargs)
         self.max_length: int = max_length
 
     def create_optimizer(self, params):
