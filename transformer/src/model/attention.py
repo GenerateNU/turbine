@@ -1,6 +1,7 @@
-import jax
 import jax.numpy as np
 from flax import linen as nn
+import haiku as hk
+from typing import Optional
 
 
 class SelfAttention(nn.Module):
@@ -65,3 +66,23 @@ class SelfAttentionBlock(nn.Module):
         x = x + self.dropout(mlp_output)
 
         return x
+
+
+class SelfAttentionHk(hk.MultiHeadAttention):
+    """Self attention with a causal mask applied."""
+
+    def __call__(
+            self,
+            query: np.ndarray,
+            key: Optional[np.ndarray] = None,
+            value: Optional[np.ndarray] = None,
+            mask: Optional[np.ndarray] = None,
+    ) -> np.ndarray:
+        key = key if key is not None else query
+        value = value if value is not None else query
+
+        seq_len = query.shape[1]
+        causal_mask = np.tril(np.ones((seq_len, seq_len)))
+        mask = mask * causal_mask if mask is not None else causal_mask
+
+        return super().__call__(query, key, value, mask)
