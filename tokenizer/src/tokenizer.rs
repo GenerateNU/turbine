@@ -108,7 +108,6 @@ enum TokenType {
     Number,
     Identifier,
     Operator,
-    // Add more token types as needed
 }
 
 #[derive(Debug)]
