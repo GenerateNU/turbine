@@ -8,15 +8,28 @@ import time
 from loss import lm_loss_fn
 from forwardpass import build_forward_fn
 from gradientupdate import GradientUpdater
+from ..dataloader import JaxDataloader
+from ..utils import TrainConfig
 
 
 logging = Logger.getLogger('__main__')
 
-MAX_STEPS = 1000
+MAX_STEPS: int = 1000
+CONFIG: TrainConfig = TrainConfig(config_file="../train_config.json")
 
-def train():
-    train_dataset, vocab_size = load(batch_size,
-                                     sequence_length)
+def train(num_heads: int = 4,
+          d_model: int = 3,
+          num_layers: int = 64,
+          dropout_rate: float = 0.002,
+          grad_clip_value: float = 0.001,
+          learning_rate: float = 0.004) -> None:
+    jdl: JaxDataloader = JaxDataloader(mongo_uri=CONFIG.mongo_uri,
+                                       database_name=CONFIG.database_name,
+                                       collection_names=CONFIG.collection_names,
+                                       max_length=CONFIG.max_length,
+                                       batch_size=CONFIG.batch_size,)
+
+    train_dataset, vocab_size = jdl.run(), jdl.vocab_size()
     
     # Set up the model, loss, and updater
     forward_fn = build_forward_fn(vocab_size, d_model, num_heads,
