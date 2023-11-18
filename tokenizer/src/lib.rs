@@ -1,2 +1,2 @@
-pub mod oai;
+pub mod tokenizer;
 pub mod pinecone_utils;

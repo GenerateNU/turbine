@@ -5,13 +5,13 @@ use std::error::Error;
 use std::env;
 
 
-pub struct OpenAIClient {
+pub struct Tokenizer {
     oai_client: Client,
     mongo_model: &MongoDriver,
     collection: String,
 }
 
-impl OpenAIClient {
+impl Tokenizer {
 
     pub fn new(openai_api_key: &str, mongo_model: &MongoDriver, collection: &str) -> Self {
         OpenAIClient {
@@ -35,7 +35,7 @@ impl OpenAIClient {
                         let args: openai_rust::embeddings::EmbeddingsArguments = openai_rust::embeddings::EmbeddingsArguments::new("text-embedding-ada-002", text.to_owned());
                         let embedding: Vec<openai_rust::embeddings::EmbeddingsData> = self.oai_client.create_embeddings(args).await.unwrap().data;
                         
-                        let update_doc = doc! {
+                        let update_doc: Document = doc! {
                             "$set": { "embedding": embedding }
                         };
 
