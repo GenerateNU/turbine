@@ -23,4 +23,9 @@
     <img src="https://github.com/GenerateNU/turbine/actions/workflows/tokenization.yml/badge.svg"
       alt="Tokenization actions status" />
   </a>
+  <!-- Transformer Actions -->
+  <a href="https://github.com/GenerateNU/turbine/actions/workflows/transformer.yml">
+    <img src="https://github.com/GenerateNU/turbine/actions/workflows/transformer.yml/badge.svg"
+      alt="Transformer actions status" />
+  </a>
 </div>
