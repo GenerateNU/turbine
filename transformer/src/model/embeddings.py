@@ -4,7 +4,7 @@ from typing import Mapping
 
 
 def embeddings(data: Mapping[str, jnp.ndarray], vocab_size: int, d_model)  -> tuple:
-    tokens = data['obs']
+    tokens = data['tokens']
     input_mask = jnp.greater(tokens, 0)
     seq_length = tokens.shape[1]
 
