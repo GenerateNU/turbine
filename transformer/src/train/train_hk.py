@@ -14,7 +14,6 @@ logging = Logger.getLogger('__main__')
 
 MAX_STEPS = 1000
 
-@jax.jit
 def train():
     train_dataset, vocab_size = load(batch_size,
                                      sequence_length)
