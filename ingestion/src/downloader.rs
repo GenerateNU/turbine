@@ -5,7 +5,7 @@ use std::path::Path;
 use mongo_utils::MongoDriver;
 use mongodb::bson::doc;
 use zip::read::ZipArchive;
-
+use octocrab;
 use crate::mongo_utils;
 
 
@@ -22,33 +22,6 @@ impl GitHubDownloader {
                             mongo_model: mongo_model, 
                             collection: collection.to_string() 
                         }
-    }
-
-    pub async fn download_git_zips(
-        &self,
-        urls: Vec<&str>,
-        zip_dirs: Vec<&str>,
-    ) -> Result<(), Box<dyn Error>> {
-        for (index, url) in urls.iter().enumerate() {
-            let response = self.client.get(url.clone()).send().await?;
-
-            if response.status() != reqwest::StatusCode::OK {
-                eprintln!("Error downloading {}: {:?}", url, response.status());
-                continue;
-            }
-            let filename: &str = url.split('/').last().unwrap_or("unknown.zip");
-            let file_path: std::path::PathBuf = Path::new(zip_dirs[index]).join(filename);
-            
-            let mut response_body = response.bytes().await?;
-            while let chunk = response_body.chunks(8) {
-                let chunk = chunk;
-                file_path.write_all(&chunk)?; // TODO: write successfully
-            }
-
-            println!("Downloaded: {}", file_path.display());
-        }
-
-        Ok(())
     }
 
     pub async fn mongo_insert(&self, zip_dir: Vec<&str>, filter_suffix: Vec<&str>) -> mongodb::error::Result<()> {
@@ -79,6 +52,48 @@ impl GitHubDownloader {
             };
             
             self.mongo_model.insert_document(self.collection.as_str(), document).await?;
+        }
+
+        Ok(())
+    }
+    pub async fn download_git_tarballs(
+        &self,
+        organization: &str,
+        token: &str,
+        output_dir: &str,
+    ) -> Result<(), Box<dyn Error>> {
+        let repos = octocrab::instance()
+            .repos(organization)
+            .list()
+            .per_page(100)
+            .token(token)
+            .send()
+            .await?;
+
+        for repo in repos {
+            let repo_name = repo.name.unwrap_or_default();
+            let tarball_url = format!(
+                "https://api.github.com/repos/{}/{}/tarball",
+                organization, repo_name
+            );
+
+            let response = self.client.get(&tarball_url).header("Authorization", format!("Bearer {}", token)).send().await?;
+
+            if response.status() != reqwest::StatusCode::OK {
+                eprintln!("Error downloading {}: {:?}", tarball_url, response.status());
+                continue;
+            }
+
+            let output_path = Path::new(output_dir).join(format!("{}.tar.gz", repo_name));
+            let mut output_file = File::create(&output_path)?;
+
+            let mut response_body = response.bytes().await?;
+            while let chunk = response_body.chunk() {
+                let chunk = chunk?;
+                output_file.write_all(&chunk)?;
+            }
+
+            println!("Downloaded: {}", output_path.display());
         }
 
         Ok(())
