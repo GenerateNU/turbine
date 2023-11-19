@@ -38,7 +38,7 @@ impl GitHubDownloader {
                 continue;
             }
 
-            let mut file_content = Vec::new();
+            let mut file_content: Vec<_> = Vec::new();
             file.read_to_end(&mut file_content)?;
 
             let content_str = match std::from_utf8(&file_content) {
@@ -46,7 +46,7 @@ impl GitHubDownloader {
                 Err(_) => continue,
             };
 
-            let document = doc! {
+            let document: mongodb::bson::Document = doc! {
                 "filename": file_name,
                 "text": content_str,
             };
